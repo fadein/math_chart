@@ -21,8 +21,14 @@ struct problem new_problem(int l, int r, char o) {
 			break;
 
 		case '/':
-			p.isol = l / r;
-			p.fsol = (float)l / (float)r;
+			if (r != 0) {
+				p.isol = l / r;
+				p.fsol = (float)l / (float)r;
+			}
+			else {
+				p.isol = 0;
+				p.fsol = 0.0;
+			}
 			break;
 	}
 

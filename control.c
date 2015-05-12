@@ -4,7 +4,7 @@
 #include "view.h"
 
 
-void test(void) {
+void test0(void) {
 	problem p = new_problem(2, 2, '+');
 	print_problem(p);
 
@@ -33,9 +33,19 @@ void test(void) {
 	print_problem(p);
 }
 
+void test1() {
+	int rows = 5, cols = 4;
+	problem p[rows * cols];
+
+	for (int i = 0; i < rows * cols; ++i)
+		p[i] = rand_problem();
+
+	print_problems(p, rows, cols);
+}
+
 int main(int argc, char** argv) {
 
-	test();
+	test1();
 
 	return 0;
 }
