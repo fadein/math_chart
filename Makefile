@@ -1,4 +1,4 @@
-CFLAGS = -std=c11
+CFLAGS = -std=c11 -ggdb3
 
 control: control.o model.o view.o
 
@@ -7,5 +7,8 @@ tags:
 
 clean:
 	rm -f *.o control
+
+deepclean: clean
+	rm -f core tags
 
 .PHONY: tags clean
