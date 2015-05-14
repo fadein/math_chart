@@ -1,4 +1,4 @@
-CFLAGS = -std=c11 -ggdb3
+CFLAGS = -std=gnu11 -ggdb3
 
 test: control.o model.o view.o test.o
 

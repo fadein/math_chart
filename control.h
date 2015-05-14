@@ -11,9 +11,18 @@ typedef struct config {
 	// which arithmetic operations to allow on this worksheet
 	int numOps;
 	char operations[4];
+
+	// range of values for exercises
+	int low, high;
+
+	// PRNG seed value
+	unsigned int seed;
+
 } config;
 
 // getopt parsing -> configuration object
 void argParsing(int argc, char* argv[], struct config* conf);
+
+void argPrinting(struct config* conf);
 
 #endif /* CONTROL_H */

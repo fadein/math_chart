@@ -35,18 +35,26 @@ struct problem new_problem(int l, int r, char o, struct config *conf) {
 	return p;
 }
 
+// TODO: get a random uint from /dev/urandom
+static void getRandomUint(struct config *conf) {
+	conf->seed = 42;
+}
+
 struct problem rand_problem(struct config *conf) {
 	static int inited = 0;
 
-	// TODO - use seed value from config object
+	// TODO - decide where this code belongs
+	// use seed value from config object, or a uint from /dev/urandom
 	if (!inited) {
-		srandom(42);
+		if (! conf->seed)
+			getRandomUint(conf);
+		srandom(conf->seed);
 		inited = 1;
 	}
 	
 	// TODO - mod sucks; do something smarter
-	int l = random() % 20;
-	int r = random() % 20;
+	int l = random() % abs(conf->high - conf->low + 1) + conf->low;
+	int r = random() % abs(conf->high - conf->low + 1) + conf->low;
 	char c = conf->operations[random() % conf->numOps];
 
 	return new_problem(l, r, c, conf);
