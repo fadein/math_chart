@@ -3,10 +3,16 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include "model.h"
 #include "view.h"
 #include "control.h"
+
+// TODO: get a random uint from /dev/urandom
+static void getRandomUint(struct config *conf) {
+	conf->seed = 42;
+}
 
 // getopt parsing -> configuration object
 void argParsing(int argc, char* argv[], struct config* conf) {
@@ -22,7 +28,7 @@ void argParsing(int argc, char* argv[], struct config* conf) {
 	conf->high = 20;
 
 	// PRNG seed value
-	conf->seed = 42;
+	conf->seed = UINT_MAX;
 
 	// Don't do division by default
 	// TODO: fix division (print as a float, etc.)
@@ -95,6 +101,12 @@ void argParsing(int argc, char* argv[], struct config* conf) {
 
 	if (fatality)
 		exit(1);
+
+	// come up with a seed value if one wasn't specified
+	if (conf->seed == UINT_MAX)
+		getRandomUint(conf);
+
+	srandom(conf->seed);
 }
 
 void argPrinting(struct config* conf) {
