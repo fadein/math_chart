@@ -4,9 +4,6 @@
 #include <getopt.h>
 #include <stdlib.h>
 
-extern char *optarg;
-extern int opterr;
-
 #include "model.h"
 #include "view.h"
 #include "control.h"
@@ -20,7 +17,10 @@ void argParsing(int argc, char* argv[], struct config* conf) {
 	conf->width = 10;
 	conf->height = 10;
 	conf->showAnswers = 0;
-	conf->numOps = 4;
+
+	// Don't do division by default
+	// TODO: fix division (print as a float, etc.)
+	conf->numOps = 3;
 	conf->operations[0] = '+';
 	conf->operations[1] = '-';
 	conf->operations[2] = '*';
