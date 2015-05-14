@@ -2,6 +2,7 @@
 
 #include "model.h"
 #include "view.h"
+#include "control.h"
 
 
 void test0(void) {
@@ -33,24 +34,20 @@ void test0(void) {
 	print_problem(p);
 }
 
-void test1() {
-	config c;
-	c.width = 10;
-	c.height = 10;
-	c.showAnswers = 0;
+void test1(struct config *c) {
+	problem p[c->width * c->height];
 
-
-	problem p[c.width * c.height];
-
-	for (int i = 0; i < c.width * c.height; ++i)
+	for (int i = 0; i < c->width * c->height; ++i)
 		p[i] = rand_problem();
 
-	print_problems(&c, p);
+	print_problems(c, p);
 }
 
 int main(int argc, char** argv) {
+	config c;
 
-	test1();
+	argParsing(argc, argv, &c);
+	test1(&c);
 
 	return 0;
 }
