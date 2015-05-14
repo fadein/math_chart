@@ -23,7 +23,7 @@ static void getRandomUint(struct config *conf) {
 }
 
 // getopt parsing -> configuration object
-void argParsing(int argc, char* argv[], struct config* conf) {
+void configureWorksheet(int argc, char* argv[], struct config* conf) {
 	// Initialize the config object
 	assert(conf != NULL);
 
@@ -117,7 +117,7 @@ void argParsing(int argc, char* argv[], struct config* conf) {
 	srandom(conf->seed);
 }
 
-void argPrinting(struct config* conf) {
+void printArguments(struct config* conf) {
 	printf("Math Worksheet (-s0x%x -r%d:%d -d%dx%d -o'%s')\n\n",
 			conf->seed,
 			conf->low, conf->high,

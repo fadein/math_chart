@@ -13,9 +13,9 @@ void test1(struct config *c) {
 
 int main(int argc, char** argv) {
 	config c;
-	argParsing(argc, argv, &c);
+	configureWorksheet(argc, argv, &c);
 
-	argPrinting(&c);
+	printArguments(&c);
 	test1(&c);
 
 	return 0;

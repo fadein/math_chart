@@ -21,8 +21,8 @@ typedef struct config {
 } config;
 
 // getopt parsing -> configuration object
-void argParsing(int argc, char* argv[], struct config* conf);
+void configureWorksheet(int argc, char* argv[], struct config* conf);
 
-void argPrinting(struct config* conf);
+void printArguments(struct config* conf);
 
 #endif /* CONTROL_H */
