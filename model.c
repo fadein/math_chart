@@ -4,7 +4,7 @@
 #include "model.h"
 
 
-struct problem new_problem(int l, int r, char o) {
+struct problem new_problem(int l, int r, char o, struct config *conf) {
 	problem p = {.left = l, .right = r, .op = o};
 
 	switch (o) {
@@ -35,10 +35,10 @@ struct problem new_problem(int l, int r, char o) {
 	return p;
 }
 
-// TODO - take into account the types of ops we want, and the range of operands
-struct problem rand_problem() {
+struct problem rand_problem(struct config *conf) {
 	static int inited = 0;
 
+	// TODO - use seed value from config object
 	if (!inited) {
 		srandom(42);
 		inited = 1;
@@ -47,26 +47,18 @@ struct problem rand_problem() {
 	// TODO - mod sucks; do something smarter
 	int l = random() % 20;
 	int r = random() % 20;
+	char c = conf->operations[random() % conf->numOps];
 
-	char c;
-	switch (random() % 4) {
-		case 0:
-			c = '+';
-			break;
-
-		case 1:
-			c = '-';
-			break;
-
-		case 2:
-			c = '*';
-			break;
-
-		case 3:
-			c = '/';
-			break;
-	}
-
-	return new_problem(l, r, c);
+	return new_problem(l, r, c, conf);
 }
 
+struct problem* makeWorksheet(struct config *c) {
+	// TODO: check errors on malloc
+	// I'm also sure Ben Klemens had a better way of doing this dance
+	problem *p = (problem *)malloc(sizeof(struct config) * c->width * c->height);
+
+	for (int i = 0; i < c->width * c->height; ++i)
+		p[i] = rand_problem(c);
+
+	return p;
+}

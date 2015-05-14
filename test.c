@@ -35,10 +35,7 @@ void test0(void) {
 }
 
 void test1(struct config *c) {
-	problem p[c->width * c->height];
-
-	for (int i = 0; i < c->width * c->height; ++i)
-		p[i] = rand_problem();
+	problem *p = makeWorksheet(c);
 
 	print_problems(c, p);
 }
