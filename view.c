@@ -4,16 +4,6 @@
 #include "view.h"
 #include "control.h"
 
-void print_problem(struct problem p) {
-	// TODO - detect/specify how wide each figure is
-	printf("%4d\n", p.left);
-	printf("%c%3d\n", p.op, p.right);
-
-	// TODO - somehow indicate whenever we're in answer mode
-	// answer mode = show the solution
-	// regular mode = hide the solution
-	printf("----\n%4d\n\n", p.isol);
-}
 
 void print_problems(struct config *conf, struct problem *p) {
 
