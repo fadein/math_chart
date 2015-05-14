@@ -4,14 +4,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "model.h"
 #include "view.h"
 #include "control.h"
 
-// TODO: get a random uint from /dev/urandom
+// get a random uint from /dev/urandom
 static void getRandomUint(struct config *conf) {
-	conf->seed = 42;
+	unsigned int r;
+	int urandom = open("/dev/urandom", O_RDONLY);
+	read(urandom, &r, sizeof(unsigned int));
+	close(urandom);
+	conf->seed = r;
 }
 
 // getopt parsing -> configuration object
@@ -110,7 +118,7 @@ void argParsing(int argc, char* argv[], struct config* conf) {
 }
 
 void argPrinting(struct config* conf) {
-	printf("Math Worksheet (-s%x -r%d:%d -d%dx%d -o'%s')\n\n",
+	printf("Math Worksheet (-s0x%x -r%d:%d -d%dx%d -o'%s')\n\n",
 			conf->seed,
 			conf->low, conf->high,
 			conf->width, conf->height,
