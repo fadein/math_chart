@@ -2,3 +2,4 @@ tags
 core
 control
 *.o
+test

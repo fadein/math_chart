@@ -1,14 +1,14 @@
 CFLAGS = -std=c11 -ggdb3
 
-control: control.o model.o view.o main.o
+test: control.o model.o view.o test.o
 
 tags:
 	ctags -R
 
 clean:
-	rm -f *.o control
+	rm -f *.o test
 
 deepclean: clean
-	rm -f core tags
+	rm -f core* tags
 
 .PHONY: tags clean
