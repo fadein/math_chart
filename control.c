@@ -124,3 +124,75 @@ void printArguments(struct config* conf) {
 			conf->width, conf->height,
 			strndup(conf->operations, conf->numOps));
 }
+
+typedef union bitpack {
+	unsigned int ui;
+	int i;
+	char c;
+	unsigned char uc;
+} bitpack;
+
+unsigned long int formKey(struct config* conf) {
+	//seed, rangeLo, rangeHi, width, height, ops
+	unsigned char o = 0;
+
+	if (memchr(conf->operations, '+', conf->numOps))
+		o |= 1 << 0;
+	if (memchr(conf->operations, '-', conf->numOps))
+		o |= 1 << 1;
+	if (memchr(conf->operations, '*', conf->numOps))
+		o |= 1 << 2;
+	if (memchr(conf->operations, '/', conf->numOps))
+		o |= 1 << 3;
+
+	bitpack rangeLo = {.i  = conf->low},
+			rangeHi = {.i  = conf->high},
+			width   = {.ui = conf->width},
+			height  = {.ui = conf->height},
+			ops     = {.uc = o};
+
+	unsigned int bits =
+		(ops.uc     & 0xF ) << 24 |
+		(width.uc   & 0xF ) << 20 |
+		(height.uc  & 0xF ) << 16 |
+		(rangeHi.uc & 0xFF) <<  8 |
+		(rangeLo.uc & 0xFF);
+	bits ^= conf->seed;
+
+	unsigned long int key = ((unsigned long int )(bits & 0xFFffFFff) << 32) | conf->seed;
+	return key;
+}
+
+struct config* unformKey(unsigned long int key) {
+	static config conf;
+	unsigned int bits = (unsigned int)((key >> 32) & 0xFFffFFff),
+				 seed = (unsigned int)(key & 0xFFffFFff);
+
+	bits ^= seed;
+	conf.seed = seed;
+
+	bitpack rangeLo = {.uc = bits & 0xFF},
+			rangeHi = {.uc = (bits & 0xFF00)     >> 8},
+			height  = {.uc = (bits & 0xF00000)   >> 16},
+			width   = {.uc = (bits & 0xF000000)  >> 20},
+			ops     = {.uc = (bits & 0xF0000000) >> 24};
+
+	conf.low    = rangeLo.i;
+	conf.high   = rangeHi.i;
+	conf.height = height.ui;
+	conf.width  = width.ui;
+
+	int i = 0;
+
+	if (ops.uc & 1 << 0)
+		conf.operations[i++] = '+';
+	if (ops.uc & 1 << 1)
+		conf.operations[i++] = '-';
+	if (ops.uc & 1 << 2)
+		conf.operations[i++] = '*';
+	if (ops.uc & 1 << 3)
+		conf.operations[i++] = '/';
+	conf.numOps = i;
+
+	return &conf;
+}
