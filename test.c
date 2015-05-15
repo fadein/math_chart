@@ -16,7 +16,6 @@ int main(int argc, char** argv) {
 	configureWorksheet(argc, argv, &c);
 
 	printArguments(&c);
-	test1(&c);
 
 	return 0;
 }

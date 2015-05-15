@@ -106,9 +106,20 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 				}
 		}
 	}
+	printf("\tconfigureWorksheet: opterr=%d, optind=%d\n", opterr, optind); //DELETE ME
 
 	if (fatality)
 		exit(1);
+
+	// if there are command-line arguments after we're done with getopt,
+	// then try to parse the next argument as a KEY
+	if (optind < argc) {
+		char *endptr;
+		unsigned long int key = strtoul(argv[optind], &endptr, 16);
+		printf("\tconfigureWorksheet: key=%lX\n", key);//DELETE ME
+		struct config *c = unformKey(key);
+		conf = c;
+	}
 
 	// come up with a seed value if one wasn't specified
 	if (conf->seed == UINT_MAX)
@@ -128,7 +139,6 @@ void printArguments(struct config* conf) {
 typedef union bitpack {
 	unsigned int ui;
 	int i;
-	char c;
 	unsigned char uc;
 } bitpack;
 
@@ -145,13 +155,17 @@ unsigned long int formKey(struct config* conf) {
 	if (memchr(conf->operations, '/', conf->numOps))
 		o |= 1 << 3;
 
-	bitpack rangeLo = {.i  = conf->low},
-			rangeHi = {.i  = conf->high},
+	bitpack rangeLo = {.i  = abs(conf->low)},
+			rangeHi = {.i  = abs(conf->high)},
 			width   = {.ui = conf->width},
 			height  = {.ui = conf->height},
-			ops     = {.uc = o};
+			ops     = {.uc = o},
+			negLo   = {.uc = conf->low < 0},
+			negHi   = {.uc = conf->high < 0};
 
 	unsigned int bits =
+		(negHi.uc   & 0x1 ) << 29 |
+		(negLo.uc   & 0x1 ) << 28 |
 		(ops.uc     & 0xF ) << 24 |
 		(width.uc   & 0xF ) << 20 |
 		(height.uc  & 0xF ) << 16 |
@@ -159,31 +173,38 @@ unsigned long int formKey(struct config* conf) {
 		(rangeLo.uc & 0xFF);
 	bits ^= conf->seed;
 
-	unsigned long int key = ((unsigned long int )(bits & 0xFFffFFff) << 32) | conf->seed;
+	unsigned long int key = ((unsigned long int )(bits & 0xFFffFFff) << 32)
+		| conf->seed;
 	return key;
 }
 
 struct config* unformKey(unsigned long int key) {
+	printf("\tunformKey: key=%lX\n", key);//DELETE ME
 	static config conf;
 	unsigned int bits = (unsigned int)((key >> 32) & 0xFFffFFff),
 				 seed = (unsigned int)(key & 0xFFffFFff);
 
-	bits ^= seed;
 	conf.seed = seed;
+	bits ^= seed;
 
-	bitpack rangeLo = {.uc = bits & 0xFF},
-			rangeHi = {.uc = (bits & 0xFF00)     >> 8},
-			height  = {.uc = (bits & 0xF00000)   >> 16},
-			width   = {.uc = (bits & 0xF000000)  >> 20},
-			ops     = {.uc = (bits & 0xF0000000) >> 24};
+	bitpack rangeLo = {.uc = bits  & 0x000000FF},
+			rangeHi = {.uc = (bits & 0x0000FF00) >> 8},
+			height  = {.uc = (bits & 0x000F0000) >> 16},
+			width   = {.uc = (bits & 0x00F00000) >> 20},
+			ops     = {.uc = (bits & 0x0F000000) >> 24},
+			negLo   = {.uc = (bits & 0x10000000) >> 28},
+			negHi   = {.uc = (bits & 0x20000000) >> 29};
 
 	conf.low    = rangeLo.i;
+	if (negLo.uc) conf.low *= -1;
+
 	conf.high   = rangeHi.i;
+	if (negHi.uc) conf.high *= -1;
+
 	conf.height = height.ui;
 	conf.width  = width.ui;
 
 	int i = 0;
-
 	if (ops.uc & 1 << 0)
 		conf.operations[i++] = '+';
 	if (ops.uc & 1 << 1)
@@ -194,5 +215,7 @@ struct config* unformKey(unsigned long int key) {
 		conf.operations[i++] = '/';
 	conf.numOps = i;
 
+	printf("unformKey(): the conf I'm gonna return looks like => "); //DELETE ME
+	printArguments(&conf);
 	return &conf;
 }
