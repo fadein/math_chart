@@ -1,0 +1,22 @@
+Math worksheet generator 1.1
+Usage: worksheet [options] [KEY]
+
+	Produce a random 10x10 arithmetic worksheet along with its unique key.
+	When this program is given the key value, the exact same sheet is recreated.
+
+These options are for informational purposes only:
+	-h        Display this help message and terminate
+	-v        Display the version number and terminate
+
+This option works when a KEY is specified:
+	-a        Display the answers to each problem
+
+These options are ignored when a KEY is given, as these settings are encoded by the KEY:
+	-n        Allow differences to be negative
+	          (subtraction problems give non-negative answers by defalut)
+	-d RxC    Specify the number of Rows and Columns of problems on the worksheet
+	          (maximum value for each is 16)
+	-o [+-x/] Choose the operations to perform
+	          (+ and - are enabled by default)
+	-r L:H    Specify the range of numbers to quiz
+	          (default value is 0:20, allowed range is [-127,127]
