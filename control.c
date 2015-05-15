@@ -161,7 +161,7 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 						"\t-o [+-x/] Choose the operations to perform\n"
 						"\t          (+ and - are enabled by default)\n"
 						"\t-r L:H    Specify the range of numbers to quiz\n"
-						"\t          (default value is 0:20, allowed range is [-127,127]\n");
+						"\t          (default value is 0:20, allowed range is [-255,255]\n");
 				fatality++;
 				break;
 
