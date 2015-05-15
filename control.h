@@ -18,6 +18,8 @@ typedef struct config {
 	// PRNG seed value
 	unsigned int seed;
 
+	// should subtraction problems be constrained to have only non-negative solutions?
+	unsigned char negDiff;
 } config;
 
 // Print this worksheet's UUID

@@ -32,22 +32,24 @@ static unsigned long int formKey(struct config* conf) {
 	if (memchr(conf->operations, '/', conf->numOps))
 		o |= 1 << 3;
 
-	bitpack rangeLo = {.i  = abs(conf->low)},
-			rangeHi = {.i  = abs(conf->high)},
-			width   = {.ui = conf->width},
-			height  = {.ui = conf->height},
-			ops     = {.uc = o},
-			negLo   = {.uc = conf->low < 0},
-			negHi   = {.uc = conf->high < 0};
+	bitpack rangeLo  = {.i  = abs(conf->low)},
+			rangeHi  = {.i  = abs(conf->high)},
+			width    = {.ui = conf->width},
+			height   = {.ui = conf->height},
+			ops      = {.uc = o},
+			negLo    = {.uc = conf->low < 0},
+			negHi    = {.uc = conf->high < 0},
+			negDiff  = {.uc = conf->negDiff};
 
 	unsigned int bits =
-		(negHi.uc   & 0x1 ) << 29 |
-		(negLo.uc   & 0x1 ) << 28 |
-		(ops.uc     & 0xF ) << 24 |
-		(width.uc   & 0xF ) << 20 |
-		(height.uc  & 0xF ) << 16 |
-		(rangeHi.uc & 0xFF) <<  8 |
-		(rangeLo.uc & 0xFF);
+		(negDiff.uc & 0x1 ) << 30 |
+		(negHi.uc              & 0x1 ) << 29 |
+		(negLo.uc              & 0x1 ) << 28 |
+		(ops.uc                & 0xF ) << 24 |
+		(width.uc              & 0xF ) << 20 |
+		(height.uc             & 0xF ) << 16 |
+		(rangeHi.uc            & 0xFF) <<  8 |
+		(rangeLo.uc            & 0xFF);
 	bits ^= conf->seed;
 
 	unsigned long int key = ((unsigned long int )(bits & 0xFFffFFff) << 32)
@@ -62,22 +64,24 @@ static void unformKey(unsigned long int key, struct config* conf) {
 	conf->seed = seed;
 	bits ^= seed;
 
-	bitpack rangeLo = {.uc = bits  & 0x000000FF},
-			rangeHi = {.uc = (bits & 0x0000FF00) >> 8},
-			height  = {.uc = (bits & 0x000F0000) >> 16},
-			width   = {.uc = (bits & 0x00F00000) >> 20},
-			ops     = {.uc = (bits & 0x0F000000) >> 24},
-			negLo   = {.uc = (bits & 0x10000000) >> 28},
-			negHi   = {.uc = (bits & 0x20000000) >> 29};
+	bitpack rangeLo  = {.uc = bits  & 0x000000FF},
+			rangeHi  = {.uc = (bits & 0x0000FF00) >> 8},
+			height   = {.uc = (bits & 0x000F0000) >> 16},
+			width    = {.uc = (bits & 0x00F00000) >> 20},
+			ops      = {.uc = (bits & 0x0F000000) >> 24},
+			negLo    = {.uc = (bits & 0x10000000) >> 28},
+			negHi    = {.uc = (bits & 0x20000000) >> 29},
+			negDiff  = {.uc = (bits & 0x40000000) >> 30};
 
-	conf->low    = rangeLo.i;
+	conf->low     = rangeLo.i;
 	if (negLo.uc) conf->low *= -1;
 
-	conf->high   = rangeHi.i;
+	conf->high    = rangeHi.i;
 	if (negHi.uc) conf->high *= -1;
 
-	conf->height = height.ui;
-	conf->width  = width.ui;
+	conf->height  = height.ui;
+	conf->width   = width.ui;
+	conf->negDiff = negDiff.uc;
 
 	int i = 0;
 	if (ops.uc & 1 << 0)
@@ -117,6 +121,9 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 	conf->low = 0;
 	conf->high = 20;
 
+	// ensure that subtraction problems result in non-negative solutions
+	conf->negDiff = 0;
+
 	// PRNG seed value
 	conf->seed = UINT_MAX;
 
@@ -131,7 +138,7 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 	int c, fatality = 0;
 
 	opterr = 0;
-	while ((c = getopt(argc, argv, "ad:o:hvr:s:")) != -1) {
+	while ((c = getopt(argc, argv, "ad:o:nhvr:s:")) != -1) {
 		switch (c) {
 
 			// whether to display the solutions
@@ -178,7 +185,10 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 					conf->high  = conf->low ^ conf->high;
 					conf->low   = conf->low ^ conf->high;
 				}
+				break;
 
+			case 'n':
+				conf->negDiff = 1;
 				break;
 
 			case 's':

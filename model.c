@@ -1,29 +1,36 @@
 #define _XOPEN_SOURCE 500
 #include <stdlib.h>
 
+#include <stdio.h>
 #include "model.h"
 
 
 struct problem new_problem(int l, int r, char o, struct config *conf) {
 	problem p = {.left = l, .right = r, .op = o};
 
-	switch (o) {
+	switch (p.op) {
 		case '+':
-			p.isol = p.fsol = l + r;
+			p.isol = p.fsol = p.left + p.right;
 			break;
 
 		case '-':
-			p.isol = p.fsol = l - r;
+			// Make sure the outcomes are non-negative, if so specified
+			if (!conf->negDiff && p.left < p.right) {
+				p.left ^= p.right;
+				p.right  = p.left ^ p.right;
+				p.left  = p.left ^ p.right;
+			}
+			p.isol = p.fsol = p.left - p.right;
 			break;
 
 		case '*':
-			p.isol = p.fsol = l * r;
+			p.isol = p.fsol = p.left * p.right;
 			break;
 
 		case '/':
-			if (r != 0) {
-				p.isol = l / r;
-				p.fsol = (float)l / (float)r;
+			if (p.right != 0) {
+				p.isol = p.left / p.right;
+				p.fsol = (float)p.left / (float)p.right;
 			}
 			else {
 				p.isol = 0;
