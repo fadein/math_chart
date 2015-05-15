@@ -1,12 +1,12 @@
 CFLAGS = -std=gnu11 -ggdb3
 
-test: control.o model.o view.o test.o
+worksheet: control.o model.o view.o worksheet.o
 
 tags:
 	ctags -R
 
 clean:
-	rm -f *.o test
+	rm -f *.o worksheet
 
 deepclean: clean
 	rm -f core* tags

@@ -91,6 +91,10 @@ static void unformKey(unsigned long int key, struct config* conf) {
 	conf->numOps = i;
 }
 
+void printKey(struct config* conf) {
+	printf("Math Worksheet [%lX]\n\n", formKey(conf));
+}
+
 // get a random uint from /dev/urandom
 static void getRandomUint(struct config *conf) {
 	unsigned int r;
@@ -116,9 +120,9 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 	// PRNG seed value
 	conf->seed = UINT_MAX;
 
-	// Don't do division by default
+	// Don't do division or multiplication by default
 	// TODO: fix division (print as a float, etc.)
-	conf->numOps = 3;
+	conf->numOps = 2;
 	conf->operations[0] = '+';
 	conf->operations[1] = '-';
 	conf->operations[2] = '*';
@@ -202,8 +206,3 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 
 	srandom(conf->seed);
 }
-
-void printArguments(struct config* conf) {
-	printf("Math Worksheet [%lX]\n\n", formKey(conf));
-}
-

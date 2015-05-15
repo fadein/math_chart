@@ -6,17 +6,16 @@
 
 
 void test1(struct config *c) {
-	problem *p = makeWorksheet(c);
-
-	print_problems(c, p);
 }
 
 int main(int argc, char** argv) {
 	config c;
-	configureWorksheet(argc, argv, &c);
 
-	printArguments(&c);
-	test1(&c);
+	configureWorksheet(argc, argv, &c);
+	problem *p = makeWorksheet(&c);
+
+	printKey(&c);
+	print_problems(&c, p);
 
 	return 0;
 }

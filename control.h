@@ -20,9 +20,10 @@ typedef struct config {
 
 } config;
 
+// Print this worksheet's UUID
+void printKey(struct config* conf);
+
 // getopt parsing -> configuration object
 void configureWorksheet(int argc, char* argv[], struct config* conf);
-
-void printArguments(struct config* conf);
 
 #endif /* CONTROL_H */

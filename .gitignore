@@ -3,3 +3,4 @@ core
 control
 *.o
 test
+worksheet
