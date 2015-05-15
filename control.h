@@ -1,6 +1,8 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
+#define VERSION "1.1"
+
 typedef struct config {
 	// size of worksheet
 	int width, height;

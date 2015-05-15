@@ -96,7 +96,7 @@ static void unformKey(unsigned long int key, struct config* conf) {
 }
 
 void printKey(struct config* conf) {
-	printf("Math Worksheet [%lX]\n\n", formKey(conf));
+	printf("Math Worksheet v" VERSION " [%lX]\n\n", formKey(conf));
 }
 
 // get a random uint from /dev/urandom
@@ -172,7 +172,7 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 				break;
 
 			case 'v':
-				printf("Version: 1.0\n");
+				printf("Version: " VERSION "\n");
 				fatality++;
 				break;
 
