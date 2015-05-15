@@ -13,6 +13,84 @@
 #include "view.h"
 #include "control.h"
 
+typedef union bitpack {
+	unsigned int ui;
+	int i;
+	unsigned char uc;
+} bitpack;
+
+static unsigned long int formKey(struct config* conf) {
+	//seed, rangeLo, rangeHi, width, height, ops
+	unsigned char o = 0;
+
+	if (memchr(conf->operations, '+', conf->numOps))
+		o |= 1 << 0;
+	if (memchr(conf->operations, '-', conf->numOps))
+		o |= 1 << 1;
+	if (memchr(conf->operations, '*', conf->numOps))
+		o |= 1 << 2;
+	if (memchr(conf->operations, '/', conf->numOps))
+		o |= 1 << 3;
+
+	bitpack rangeLo = {.i  = abs(conf->low)},
+			rangeHi = {.i  = abs(conf->high)},
+			width   = {.ui = conf->width},
+			height  = {.ui = conf->height},
+			ops     = {.uc = o},
+			negLo   = {.uc = conf->low < 0},
+			negHi   = {.uc = conf->high < 0};
+
+	unsigned int bits =
+		(negHi.uc   & 0x1 ) << 29 |
+		(negLo.uc   & 0x1 ) << 28 |
+		(ops.uc     & 0xF ) << 24 |
+		(width.uc   & 0xF ) << 20 |
+		(height.uc  & 0xF ) << 16 |
+		(rangeHi.uc & 0xFF) <<  8 |
+		(rangeLo.uc & 0xFF);
+	bits ^= conf->seed;
+
+	unsigned long int key = ((unsigned long int )(bits & 0xFFffFFff) << 32)
+		| conf->seed;
+	return key;
+}
+
+static void unformKey(unsigned long int key, struct config* conf) {
+	unsigned int bits = (unsigned int)((key >> 32) & 0xFFffFFff),
+				 seed = (unsigned int)(key & 0xFFffFFff);
+
+	conf->seed = seed;
+	bits ^= seed;
+
+	bitpack rangeLo = {.uc = bits  & 0x000000FF},
+			rangeHi = {.uc = (bits & 0x0000FF00) >> 8},
+			height  = {.uc = (bits & 0x000F0000) >> 16},
+			width   = {.uc = (bits & 0x00F00000) >> 20},
+			ops     = {.uc = (bits & 0x0F000000) >> 24},
+			negLo   = {.uc = (bits & 0x10000000) >> 28},
+			negHi   = {.uc = (bits & 0x20000000) >> 29};
+
+	conf->low    = rangeLo.i;
+	if (negLo.uc) conf->low *= -1;
+
+	conf->high   = rangeHi.i;
+	if (negHi.uc) conf->high *= -1;
+
+	conf->height = height.ui;
+	conf->width  = width.ui;
+
+	int i = 0;
+	if (ops.uc & 1 << 0)
+		conf->operations[i++] = '+';
+	if (ops.uc & 1 << 1)
+		conf->operations[i++] = '-';
+	if (ops.uc & 1 << 2)
+		conf->operations[i++] = '*';
+	if (ops.uc & 1 << 3)
+		conf->operations[i++] = '/';
+	conf->numOps = i;
+}
+
 // get a random uint from /dev/urandom
 static void getRandomUint(struct config *conf) {
 	unsigned int r;
@@ -106,7 +184,6 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 				}
 		}
 	}
-	printf("\tconfigureWorksheet: opterr=%d, optind=%d\n", opterr, optind); //DELETE ME
 
 	if (fatality)
 		exit(1);
@@ -116,9 +193,7 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 	if (optind < argc) {
 		char *endptr;
 		unsigned long int key = strtoul(argv[optind], &endptr, 16);
-		printf("\tconfigureWorksheet: key=%lX\n", key);//DELETE ME
-		struct config *c = unformKey(key);
-		conf = c;
+		unformKey(key, conf);
 	}
 
 	// come up with a seed value if one wasn't specified
@@ -129,93 +204,6 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 }
 
 void printArguments(struct config* conf) {
-	printf("Math Worksheet (-s0x%x -r%d:%d -d%dx%d -o'%s')\n\n",
-			conf->seed,
-			conf->low, conf->high,
-			conf->width, conf->height,
-			strndup(conf->operations, conf->numOps));
+	printf("Math Worksheet [%lX]\n\n", formKey(conf));
 }
 
-typedef union bitpack {
-	unsigned int ui;
-	int i;
-	unsigned char uc;
-} bitpack;
-
-unsigned long int formKey(struct config* conf) {
-	//seed, rangeLo, rangeHi, width, height, ops
-	unsigned char o = 0;
-
-	if (memchr(conf->operations, '+', conf->numOps))
-		o |= 1 << 0;
-	if (memchr(conf->operations, '-', conf->numOps))
-		o |= 1 << 1;
-	if (memchr(conf->operations, '*', conf->numOps))
-		o |= 1 << 2;
-	if (memchr(conf->operations, '/', conf->numOps))
-		o |= 1 << 3;
-
-	bitpack rangeLo = {.i  = abs(conf->low)},
-			rangeHi = {.i  = abs(conf->high)},
-			width   = {.ui = conf->width},
-			height  = {.ui = conf->height},
-			ops     = {.uc = o},
-			negLo   = {.uc = conf->low < 0},
-			negHi   = {.uc = conf->high < 0};
-
-	unsigned int bits =
-		(negHi.uc   & 0x1 ) << 29 |
-		(negLo.uc   & 0x1 ) << 28 |
-		(ops.uc     & 0xF ) << 24 |
-		(width.uc   & 0xF ) << 20 |
-		(height.uc  & 0xF ) << 16 |
-		(rangeHi.uc & 0xFF) <<  8 |
-		(rangeLo.uc & 0xFF);
-	bits ^= conf->seed;
-
-	unsigned long int key = ((unsigned long int )(bits & 0xFFffFFff) << 32)
-		| conf->seed;
-	return key;
-}
-
-struct config* unformKey(unsigned long int key) {
-	printf("\tunformKey: key=%lX\n", key);//DELETE ME
-	static config conf;
-	unsigned int bits = (unsigned int)((key >> 32) & 0xFFffFFff),
-				 seed = (unsigned int)(key & 0xFFffFFff);
-
-	conf.seed = seed;
-	bits ^= seed;
-
-	bitpack rangeLo = {.uc = bits  & 0x000000FF},
-			rangeHi = {.uc = (bits & 0x0000FF00) >> 8},
-			height  = {.uc = (bits & 0x000F0000) >> 16},
-			width   = {.uc = (bits & 0x00F00000) >> 20},
-			ops     = {.uc = (bits & 0x0F000000) >> 24},
-			negLo   = {.uc = (bits & 0x10000000) >> 28},
-			negHi   = {.uc = (bits & 0x20000000) >> 29};
-
-	conf.low    = rangeLo.i;
-	if (negLo.uc) conf.low *= -1;
-
-	conf.high   = rangeHi.i;
-	if (negHi.uc) conf.high *= -1;
-
-	conf.height = height.ui;
-	conf.width  = width.ui;
-
-	int i = 0;
-	if (ops.uc & 1 << 0)
-		conf.operations[i++] = '+';
-	if (ops.uc & 1 << 1)
-		conf.operations[i++] = '-';
-	if (ops.uc & 1 << 2)
-		conf.operations[i++] = '*';
-	if (ops.uc & 1 << 3)
-		conf.operations[i++] = '/';
-	conf.numOps = i;
-
-	printf("unformKey(): the conf I'm gonna return looks like => "); //DELETE ME
-	printArguments(&conf);
-	return &conf;
-}

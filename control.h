@@ -25,8 +25,4 @@ void configureWorksheet(int argc, char* argv[], struct config* conf);
 
 void printArguments(struct config* conf);
 
-unsigned long int formKey(struct config* conf);
-
-struct config* unformKey(unsigned long int key);
-
 #endif /* CONTROL_H */
