@@ -13,6 +13,7 @@
 #include "view.h"
 #include "control.h"
 
+// TODO: decide how to handle unsigned long ints on 32-bit platforms
 typedef union bitpack {
 	unsigned int ui;
 	int i;
@@ -141,6 +142,36 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 	while ((c = getopt(argc, argv, "ad:o:nhvr:s:")) != -1) {
 		switch (c) {
 
+			// Display usage info
+			case 'h':
+				printf( "Math worksheet generator " VERSION "\n"
+						"Usage: worksheet [options] [KEY]\n\n"
+						"\tProduce a random 10x10 arithmetic worksheet along with its unique key.\n"
+						"\tWhen this program is given the key value, the exact same sheet is recreated.\n"
+						"\nThese options are for informational purposes only:\n"
+						"\t-h        Display this help message and terminate\n"
+						"\t-v        Display the version number and terminate\n"
+						"\nThis option works when a KEY is specified:\n"
+						"\t-a        Display the answers to each problem\n"
+						"\nThese options are ignored when a KEY is given, as these settings are encoded by the KEY:\n"
+						"\t-n        Allow differences to be negative\n"
+						"\t          (subtraction problems give non-negative answers by defalut)\n"
+						"\t-d RxC    Specify the number of Rows and Columns of problems on the worksheet\n"
+						"\t          (maximum value for each is 16)\n"
+						"\t-o [+-x/] Choose the operations to perform\n"
+						"\t          (+ and - are enabled by default)\n"
+						"\t-r L:H    Specify the range of numbers to quiz\n"
+						"\t          (default value is 0:20, allowed range is [-127,127]\n");
+				fatality++;
+				break;
+
+			// Display version number
+			case 'v':
+				printf("Version: " VERSION "\n");
+				fatality++;
+				break;
+
+
 			// whether to display the solutions
 			case 'a':
 				conf->showAnswers = 1;
@@ -164,16 +195,6 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 					conf->operations[conf->numOps++] = '*';
 				if (strchr(optarg, '/'))
 					conf->operations[conf->numOps++] = '/';
-				break;
-
-			case 'h':
-				printf("Usage: TBD\n");
-				fatality++;
-				break;
-
-			case 'v':
-				printf("Version: " VERSION "\n");
-				fatality++;
 				break;
 
 			case 'r':
