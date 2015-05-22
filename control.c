@@ -13,14 +13,13 @@
 #include "view.h"
 #include "control.h"
 
-// TODO: decide how to handle unsigned long ints on 32-bit platforms
 typedef union bitpack {
 	unsigned int ui;
 	int i;
 	unsigned char uc;
 } bitpack;
 
-static unsigned long int formKey(struct config* conf) {
+static unsigned long long int formKey(struct config* conf) {
 	//seed, rangeLo, rangeHi, width, height, ops
 	unsigned char o = 0;
 
@@ -53,12 +52,12 @@ static unsigned long int formKey(struct config* conf) {
 		(rangeLo.uc            & 0xFF);
 	bits ^= conf->seed;
 
-	unsigned long int key = ((unsigned long int )(bits & 0xFFffFFff) << 32)
+	unsigned long long int key = ((unsigned long long int )(bits & 0xFFffFFff) << 32)
 		| conf->seed;
 	return key;
 }
 
-static void unformKey(unsigned long int key, struct config* conf) {
+static void unformKey(unsigned long long int key, struct config* conf) {
 	unsigned int bits = (unsigned int)((key >> 32) & 0xFFffFFff),
 				 seed = (unsigned int)(key & 0xFFffFFff);
 
@@ -227,7 +226,7 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 	// then try to parse the next argument as a KEY
 	if (optind < argc) {
 		char *endptr;
-		unsigned long int key = strtoul(argv[optind], &endptr, 16);
+		unsigned long long int key = strtoull(argv[optind], &endptr, 16);
 		unformKey(key, conf);
 	}
 
