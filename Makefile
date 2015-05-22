@@ -3,9 +3,8 @@ worksheet_SRCS := $(wildcard *.c)
 
 CFLAGS = -std=gnu11 -ggdb3
 
-#TODO- a deps file so that I can automagically rebuild when a header changes
 %.d: $(worksheet_SRCS)
-	@ $(CC) $(CPPFLAGS) -MM $*.c | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+	@ $(CC) -MM $*.c | sed -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
 
 $(worksheet_BIN): ${worksheet_SRCS:.c=.o}
 
