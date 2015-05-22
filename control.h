@@ -1,7 +1,7 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
-#define VERSION "1.2"
+#define VERSION "1.3"
 
 typedef struct config {
 	// size of worksheet
