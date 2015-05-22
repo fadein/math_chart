@@ -23,7 +23,7 @@ struct problem new_problem(int l, int r, char o, struct config *conf) {
 			p.isol = p.fsol = p.left - p.right;
 			break;
 
-		case '*':
+		case 'x':
 			p.isol = p.fsol = p.left * p.right;
 			break;
 

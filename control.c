@@ -28,7 +28,7 @@ static unsigned long int formKey(struct config* conf) {
 		o |= 1 << 0;
 	if (memchr(conf->operations, '-', conf->numOps))
 		o |= 1 << 1;
-	if (memchr(conf->operations, '*', conf->numOps))
+	if (memchr(conf->operations, 'x', conf->numOps))
 		o |= 1 << 2;
 	if (memchr(conf->operations, '/', conf->numOps))
 		o |= 1 << 3;
@@ -90,7 +90,7 @@ static void unformKey(unsigned long int key, struct config* conf) {
 	if (ops.uc & 1 << 1)
 		conf->operations[i++] = '-';
 	if (ops.uc & 1 << 2)
-		conf->operations[i++] = '*';
+		conf->operations[i++] = 'x';
 	if (ops.uc & 1 << 3)
 		conf->operations[i++] = '/';
 	conf->numOps = i;
@@ -133,7 +133,7 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 	conf->numOps = 2;
 	conf->operations[0] = '+';
 	conf->operations[1] = '-';
-	conf->operations[2] = '*';
+	conf->operations[2] = 'x';
 	conf->operations[3] = '/';
 
 	int c, fatality = 0;
@@ -191,8 +191,8 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 					conf->operations[conf->numOps++] = '+';
 				if (strchr(optarg, '-'))
 					conf->operations[conf->numOps++] = '-';
-				if (strchr(optarg, '*'))
-					conf->operations[conf->numOps++] = '*';
+				if (strchr(optarg, 'x'))
+					conf->operations[conf->numOps++] = 'x';
 				if (strchr(optarg, '/'))
 					conf->operations[conf->numOps++] = '/';
 				break;
