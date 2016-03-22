@@ -19,6 +19,7 @@ typedef union bitpack {
 	unsigned char uc;
 } bitpack;
 
+// Given a configuration structure, form a key number
 static unsigned long long int formKey(struct config* conf) {
 	//seed, rangeLo, rangeHi, width, height, ops
 	unsigned char o = 0;
@@ -57,6 +58,7 @@ static unsigned long long int formKey(struct config* conf) {
 	return key;
 }
 
+// Given a key number, form a configuration structure
 static void unformKey(unsigned long long int key, struct config* conf) {
 	unsigned int bits = (unsigned int)((key >> 32) & 0xFFffFFff),
 				 seed = (unsigned int)(key & 0xFFffFFff);
@@ -84,19 +86,21 @@ static void unformKey(unsigned long long int key, struct config* conf) {
 	conf->negDiff = negDiff.uc;
 
 	int i = 0;
-	if (ops.uc & 1 << 0)
-		conf->operations[i++] = '+';
-	if (ops.uc & 1 << 1)
-		conf->operations[i++] = '-';
-	if (ops.uc & 1 << 2)
-		conf->operations[i++] = 'x';
-	if (ops.uc & 1 << 3)
-		conf->operations[i++] = '/';
-	conf->numOps = i;
+	// table of the number of bits per number [0 - 15]
+	// (except where I say that 0 has 1 bit I can't have numOps == 0
+	// since I use it as a divisor later on in the code)
+	int bpn[] = { 1, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
+	conf->numOps = bpn[ops.uc & 0xF];
 }
 
+// Print the key as an easy-to-read hex string
 void printKey(struct config* conf) {
-	printf("Math Worksheet v" VERSION " [%llX]\n\n", formKey(conf));
+	unsigned long long k = formKey(conf);
+	printf("Math Worksheet v" VERSION " [%X %X %X %X]\n\n",
+			(k & 0xFFFF000000000000) >> 48,
+			(k & 0x0000FFFF00000000) >> 32,
+			(k & 0x00000000FFFF0000) >> 16,
+			(k & 0x000000000000FFFF));
 }
 
 // get a random uint from /dev/urandom
@@ -229,9 +233,8 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 		int n = 0,
 			c = optind;
 
-		// join up to 16 chars into a key
-		// test with key A0645F59A3CE4B59
-		for (; c <= argc && n <= 15; ++c) {
+		// join up to 16 space-separated chars on cmdline into a key
+		for (; c < argc && n <= 15; ++c) {
 			if (strlen(argv[c]) <= 16 - n) {
 				n += strlen(argv[c]);
 				strncat(keyStr, argv[c], n);
