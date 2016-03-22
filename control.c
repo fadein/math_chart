@@ -234,10 +234,16 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 			c = optind;
 
 		// join up to 16 space-separated chars on cmdline into a key
-		for (; c < argc && n <= 15; ++c) {
+		for (; c < argc && n <= 16; ++c) {
 			if (strlen(argv[c]) <= 16 - n) {
 				n += strlen(argv[c]);
 				strncat(keyStr, argv[c], n);
+			}
+			else {
+				// this argument is long enough to overflow keyStr, and is longer than
+				// a valid key. We'll just pick off enough bytes to complete our key
+				strncat(keyStr, argv[c], 16 - n);
+				break;
 			}
 		}
 
