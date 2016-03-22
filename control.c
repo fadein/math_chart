@@ -42,8 +42,8 @@ static uint64_t formKey(struct config* conf) {
 			negHi    = {.uc = conf->high < 0},
 			negDiff  = {.uc = conf->negDiff};
 
-	unsigned int bits =
-		(negDiff.uc & 0x1 ) << 30 |
+	uint32_t bits =
+		(negDiff.uc & 0x1)             << 30 |
 		(negHi.uc              & 0x1 ) << 29 |
 		(negLo.uc              & 0x1 ) << 28 |
 		(ops.uc                & 0xF ) << 24 |
@@ -60,8 +60,8 @@ static uint64_t formKey(struct config* conf) {
 
 // Given a key number, form a configuration structure
 static void unformKey(uint64_t key, struct config* conf) {
-	unsigned int bits = (unsigned int)((key >> 32) & 0xFFffFFff),
-				 seed = (unsigned int)(key & 0xFFffFFff);
+	uint32_t bits = (uint32_t)((key >> 32) & 0xFFffFFff),
+			 seed = (uint32_t)(key         & 0xFFffFFff);
 
 	conf->seed = seed;
 	bits ^= seed;
@@ -90,12 +90,13 @@ static void unformKey(uint64_t key, struct config* conf) {
 	// (except where I say that 0 has 1 bit I can't have numOps == 0
 	// since I use it as a divisor later on in the code)
 	int bpn[] = { 1, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4 };
-	conf->numOps = bpn[ops.uc & 0xF];
+	conf->numOps = bpn[ops.uc & 0x0F];
 }
 
 // Print the key as an easy-to-read hex string
 void printKey(struct config* conf) {
 	uint64_t k = formKey(conf);
+	printf("Math Worksheet v" VERSION " [%llX] sizeof(k) = %d\n", k, sizeof(k));
 	printf("Math Worksheet v" VERSION " [%04X %04X %04X %04X]\n\n",
 			(k & 0xFFFF000000000000) >> 48,
 			(k & 0x0000FFFF00000000) >> 32,
@@ -106,7 +107,7 @@ void printKey(struct config* conf) {
 
 // get a random uint from /dev/urandom
 static void getRandomUint(struct config *conf) {
-	unsigned int r;
+	uint32_t r;
 	int urandom = open("/dev/urandom", O_RDONLY);
 	read(urandom, &r, sizeof(uint32_t));
 	close(urandom);
@@ -130,7 +131,7 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 	conf->negDiff = 0;
 
 	// PRNG seed value
-	conf->seed = UINT_MAX;
+	conf->seed = UINT32_MAX;
 
 	// Don't do division or multiplication by default
 	// TODO: fix division (print as a float, etc.)
