@@ -96,13 +96,11 @@ static void unformKey(uint64_t key, struct config* conf) {
 // Print the key as an easy-to-read hex string
 void printKey(struct config* conf) {
 	uint64_t k = formKey(conf);
-	printf("Math Worksheet v" VERSION " [%llX] sizeof(k) = %d\n", k, sizeof(k));
-	printf("Math Worksheet v" VERSION " [%04X %04X %04X %04X]\n\n",
+	printf("Math Worksheet v" VERSION " [%04llX %04llX %04llX %04llX]\n\n",
 			(k & 0xFFFF000000000000) >> 48,
 			(k & 0x0000FFFF00000000) >> 32,
 			(k & 0x00000000FFFF0000) >> 16,
 			(k & 0x000000000000FFFF));
-
 }
 
 // get a random uint from /dev/urandom
