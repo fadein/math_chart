@@ -96,7 +96,7 @@ static void unformKey(unsigned long long int key, struct config* conf) {
 // Print the key as an easy-to-read hex string
 void printKey(struct config* conf) {
 	unsigned long long k = formKey(conf);
-	printf("Math Worksheet v" VERSION " [%X %X %X %X]\n\n",
+	printf("Math Worksheet v" VERSION " [%04X %04X %04X %04X]\n\n",
 			(k & 0xFFFF000000000000) >> 48,
 			(k & 0x0000FFFF00000000) >> 32,
 			(k & 0x00000000FFFF0000) >> 16,
