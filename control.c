@@ -225,8 +225,20 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 	// if there are command-line arguments after we're done with getopt,
 	// then try to parse the next argument as a KEY
 	if (optind < argc) {
-		char *endptr;
-		unsigned long long int key = strtoull(argv[optind], &endptr, 16);
+		char keyStr[17] = { '\0' };
+		int n = 0,
+			c = optind;
+
+		// join up to 16 chars into a key
+		// test with key A0645F59A3CE4B59
+		for (; c <= argc && n <= 15; ++c) {
+			if (strlen(argv[c]) <= 16 - n) {
+				n += strlen(argv[c]);
+				strncat(keyStr, argv[c], n);
+			}
+		}
+
+		unsigned long long int key = strtoull(keyStr, NULL, 16);
 		unformKey(key, conf);
 	}
 
