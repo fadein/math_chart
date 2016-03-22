@@ -1,6 +1,8 @@
 #ifndef CONTROL_H
 #define CONTROL_H
 
+#include <inttypes.h>
+
 #define VERSION "1.4"
 
 typedef struct config {
@@ -18,7 +20,7 @@ typedef struct config {
 	int low, high;
 
 	// PRNG seed value
-	unsigned int seed;
+	uint32_t seed;
 
 	// should subtraction problems be constrained to have only non-negative solutions?
 	unsigned char negDiff;

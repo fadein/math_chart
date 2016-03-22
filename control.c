@@ -20,7 +20,7 @@ typedef union bitpack {
 } bitpack;
 
 // Given a configuration structure, form a key number
-static unsigned long long int formKey(struct config* conf) {
+static uint64_t formKey(struct config* conf) {
 	//seed, rangeLo, rangeHi, width, height, ops
 	unsigned char o = 0;
 
@@ -53,13 +53,13 @@ static unsigned long long int formKey(struct config* conf) {
 		(rangeLo.uc            & 0xFF);
 	bits ^= conf->seed;
 
-	unsigned long long int key = ((unsigned long long int )(bits & 0xFFffFFff) << 32)
+	uint64_t key = ((uint64_t)(bits & 0xFFffFFff) << 32)
 		| conf->seed;
 	return key;
 }
 
 // Given a key number, form a configuration structure
-static void unformKey(unsigned long long int key, struct config* conf) {
+static void unformKey(uint64_t key, struct config* conf) {
 	unsigned int bits = (unsigned int)((key >> 32) & 0xFFffFFff),
 				 seed = (unsigned int)(key & 0xFFffFFff);
 
@@ -95,19 +95,20 @@ static void unformKey(unsigned long long int key, struct config* conf) {
 
 // Print the key as an easy-to-read hex string
 void printKey(struct config* conf) {
-	unsigned long long k = formKey(conf);
+	uint64_t k = formKey(conf);
 	printf("Math Worksheet v" VERSION " [%04X %04X %04X %04X]\n\n",
 			(k & 0xFFFF000000000000) >> 48,
 			(k & 0x0000FFFF00000000) >> 32,
 			(k & 0x00000000FFFF0000) >> 16,
 			(k & 0x000000000000FFFF));
+
 }
 
 // get a random uint from /dev/urandom
 static void getRandomUint(struct config *conf) {
 	unsigned int r;
 	int urandom = open("/dev/urandom", O_RDONLY);
-	read(urandom, &r, sizeof(unsigned int));
+	read(urandom, &r, sizeof(uint32_t));
 	close(urandom);
 	conf->seed = r;
 }
@@ -247,7 +248,7 @@ void configureWorksheet(int argc, char* argv[], struct config* conf) {
 			}
 		}
 
-		unsigned long long int key = strtoull(keyStr, NULL, 16);
+		uint64_t key = strtoull(keyStr, NULL, 16);
 		unformKey(key, conf);
 	}
 
